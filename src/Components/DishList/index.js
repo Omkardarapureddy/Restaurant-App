@@ -32,7 +32,7 @@ const DishList = props => {
           <button type="button" onClick={onClickRemove}>
             -
           </button>
-          <span>{count || 0}</span>
+          <p>{count || 0}</p>
           <button type="button" onClick={onClickAdd}>
             +
           </button>

@@ -1,8 +1,16 @@
 import {Component} from 'react'
+import Loader from 'react-loader-spinner'
 import DishCategory from '../DishCategory'
 import DishList from '../DishList'
 import CartItem from '../CartItem'
 import Header from '../Header'
+
+const apiStatusConstants = {
+  initial: 'INITIAL',
+  success: 'SUCCESS',
+  failure: 'FAILURE',
+  inProgress: 'IN_PROGRESS',
+}
 
 class Home extends Component {
   state = {
@@ -11,6 +19,8 @@ class Home extends Component {
     dishes: [],
     cart: [],
     totalCartCount: 0,
+    apiStatus: apiStatusConstants.initial,
+    // count: 0,
   }
 
   componentDidMount() {
@@ -27,10 +37,12 @@ class Home extends Component {
     dishDescription: data.dish_description,
     dishAvailability: data.dish_Availability,
     addoncat: data.addoncat,
-    count: 0,
   })
 
   fetchData = async () => {
+    this.setState({
+      apiStatus: apiStatusConstants.inProgress,
+    })
     const apiUrl =
       'https://run.mocky.io/v3/77a7e71b-804a-4fbd-822c-3e365d3482cc'
 
@@ -54,12 +66,38 @@ class Home extends Component {
           categories: dataFormat,
           selectedCategory: defaultCategory.menuCategoryId,
           dishes: defaultCategory.categoryDishes,
+          apiStatus: apiStatusConstants.success,
         })
       }
     } catch (error) {
       console.error('Error fetching data:', error)
+      this.setState({
+        apiStatus: apiStatusConstants.failure,
+      })
     }
   }
+
+  renderLoadingView = () => (
+    <div className="products-loader-container">
+      <Loader type="ThreeDots" color="#0b69ff" height="50" width="50" />
+    </div>
+  )
+
+  renderFailureView = () => (
+    <div className="products-error-view-container">
+      <img
+        src="https://assets.ccbp.in/frontend/react-js/nxt-trendz/nxt-trendz-products-error-view.png"
+        alt="all-products-error"
+        className="products-failure-img"
+      />
+      <h1 className="product-failure-heading-text">
+        Oops! Something Went Wrong
+      </h1>
+      <p className="products-failure-description">
+        We are having some trouble processing your request. Please try again.
+      </p>
+    </div>
+  )
 
   fetchDishes = categoryId => {
     const {categories} = this.state
@@ -90,7 +128,7 @@ class Home extends Component {
         const newCartItem = {
           id: selectedDish.dishId,
           name: selectedDish.dishName,
-          quantity: 1,
+          quantity: 0,
         }
         this.setState({cart: [...cart, newCartItem]})
       }
@@ -150,7 +188,7 @@ class Home extends Component {
     return cart.reduce((total, item) => total + item.quantity, 0)
   }
 
-  render() {
+  renderSuccessView = () => {
     const {
       categories,
       selectedCategory,
@@ -163,10 +201,10 @@ class Home extends Component {
       <div>
         <Header />
         <ul>
-          {categories.map(eachCategory => (
+          {categories.map(category => (
             <DishCategory
-              key={eachCategory.menuCategoryId}
-              categories={eachCategory}
+              key={category.menuCategoryId}
+              categories={category}
               handleCategoryClick={this.handleCategoryClick}
             />
           ))}
@@ -187,10 +225,29 @@ class Home extends Component {
           {cart.map(cartItem => (
             <CartItem key={cartItem.id} cartItem={cartItem} />
           ))}
-          <p>Total Cart Count: {totalCartCount}</p>
+          <p> {totalCartCount}</p>
         </div>
       </div>
     )
+  }
+
+  renderAllSuccess = () => {
+    const {apiStatus} = this.state
+
+    switch (apiStatus) {
+      case apiStatusConstants.success:
+        return this.renderSuccessView()
+      case apiStatusConstants.failure:
+        return this.renderFailureView()
+      case apiStatusConstants.inProgress:
+        return this.renderLoadingView()
+      default:
+        return null
+    }
+  }
+
+  render() {
+    return <div>{this.renderAllSuccess()}</div>
   }
 }
 export default Home
