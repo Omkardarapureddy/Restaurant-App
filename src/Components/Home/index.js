@@ -2,7 +2,6 @@ import {Component} from 'react'
 import Loader from 'react-loader-spinner'
 import DishCategory from '../DishCategory'
 import DishList from '../DishList'
-import CartItem from '../CartItem'
 import Header from '../Header'
 
 const apiStatusConstants = {
@@ -17,10 +16,8 @@ class Home extends Component {
     categories: [],
     selectedCategory: null,
     dishes: [],
-    cart: [],
-    totalCartCount: 0,
+    quantity: 0, // Changed name to totalQuantity
     apiStatus: apiStatusConstants.initial,
-    // count: 0,
   }
 
   componentDidMount() {
@@ -115,24 +112,11 @@ class Home extends Component {
     this.fetchDishes(categoryId)
   }
 
-  handleAddToCart = dishId => {
-    const {dishes, cart} = this.state
+  handleAddToQuantity = dishId => {
+    const {dishes, quantity} = this.state
     const selectedDish = dishes.find(dish => dish.dishId === dishId)
 
     if (selectedDish && selectedDish.dishAvailability) {
-      const existingCartItem = cart.find(item => item.id === dishId)
-
-      if (existingCartItem) {
-        existingCartItem.quantity += 1
-      } else {
-        const newCartItem = {
-          id: selectedDish.dishId,
-          name: selectedDish.dishName,
-          quantity: 0,
-        }
-        this.setState({cart: [...cart, newCartItem]})
-      }
-
       this.setState(prevState => {
         const updatedDishes = prevState.dishes.map(dish =>
           dish.dishId === dishId && dish.dishAvailability
@@ -140,62 +124,36 @@ class Home extends Component {
             : dish,
         )
 
-        const updatedCart = prevState.cart.map(item =>
-          item.id === dishId ? {...item, quantity: item.quantity + 1} : item,
-        )
-
         return {
           dishes: updatedDishes,
-          cart: updatedCart,
-          totalCartCount: this.calculateTotalCartCount(updatedCart),
+          quantity: quantity + 1,
         }
       })
     }
   }
 
-  handleRemoveFromCart = dishId => {
-    const {dishes, cart} = this.state
+  handleRemoveFromQuantity = dishId => {
+    const {dishes, quantity} = this.state
     const selectedDish = dishes.find(dish => dish.dishId === dishId)
-    const existingCartItem = cart.find(item => item.id === dishId)
 
-    if (selectedDish && existingCartItem) {
-      existingCartItem.quantity -= 1
-
+    if (selectedDish) {
       this.setState(prevState => {
         const updatedDishes = prevState.dishes.map(dish =>
           dish.dishId === dishId && dish.dishAvailability
-            ? {...dish, count: (dish.count || 0) - 1}
+            ? {...dish, count: Math.max((dish.count || 0) - 1, 0)}
             : dish,
         )
 
-        const updatedCart = prevState.cart.map(item =>
-          item.id === dishId ? {...item, quantity: item.quantity - 1} : item,
-        )
-
-        const filteredCart = updatedCart.filter(item => item.quantity > 0)
-
         return {
           dishes: updatedDishes,
-          cart: filteredCart,
-          totalCartCount: this.calculateTotalCartCount(filteredCart),
+          quantity: Math.max(quantity - 1, 0),
         }
       })
     }
   }
 
-  calculateTotalCartCount = () => {
-    const {cart} = this.state
-    return cart.reduce((total, item) => total + item.quantity, 0)
-  }
-
   renderSuccessView = () => {
-    const {
-      categories,
-      selectedCategory,
-      dishes,
-      cart,
-      totalCartCount,
-    } = this.state
+    const {categories, dishes, selectedCategory} = this.state
     console.log(selectedCategory)
     return (
       <div>
@@ -214,19 +172,11 @@ class Home extends Component {
             <DishList
               key={item.dishId}
               dishes={item}
-              handleAddToCart={this.handleAddToCart}
-              handleRemoveFromCart={this.handleRemoveFromCart}
+              handleAddToQuantity={this.handleAddToQuantity}
+              handleRemoveFromQuantity={this.handleRemoveFromQuantity}
             />
           ))}
         </ul>
-
-        <div>
-          <h2>Cart</h2>
-          {cart.map(cartItem => (
-            <CartItem key={cartItem.id} cartItem={cartItem} />
-          ))}
-          <p> {totalCartCount}</p>
-        </div>
       </div>
     )
   }
@@ -250,4 +200,5 @@ class Home extends Component {
     return <div>{this.renderAllSuccess()}</div>
   }
 }
+
 export default Home
