@@ -1,4 +1,5 @@
 import {Component} from 'react'
+import Cookies from 'js-cookie'
 import Loader from 'react-loader-spinner'
 import DishCategory from '../DishCategory'
 import DishList from '../DishList'
@@ -16,7 +17,7 @@ class Home extends Component {
     categories: [],
     selectedCategory: null,
     dishes: [],
-    quantity: 0, // Changed name to totalQuantity
+    quantity: 1, // Changed name to totalQuantity
     apiStatus: apiStatusConstants.initial,
   }
 
@@ -40,11 +41,20 @@ class Home extends Component {
     this.setState({
       apiStatus: apiStatusConstants.inProgress,
     })
+
+    const jwtToken = Cookies.get('jwt_token')
     const apiUrl =
       'https://run.mocky.io/v3/77a7e71b-804a-4fbd-822c-3e365d3482cc'
 
+    const options = {
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+      },
+      method: 'GET',
+    }
+
     try {
-      const response = await fetch(apiUrl)
+      const response = await fetch(apiUrl, options)
       if (!response.ok) {
         throw new Error('Network response was not ok')
       }
@@ -156,7 +166,7 @@ class Home extends Component {
     const {categories, dishes, selectedCategory} = this.state
     console.log(selectedCategory)
     return (
-      <div>
+      <>
         <Header />
         <ul>
           {categories.map(category => (
@@ -177,7 +187,7 @@ class Home extends Component {
             />
           ))}
         </ul>
-      </div>
+      </>
     )
   }
 

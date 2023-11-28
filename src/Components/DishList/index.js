@@ -3,12 +3,7 @@ import CartContext from '../../context/CartContext'
 const DishList = props => (
   <CartContext.Consumer>
     {value => {
-      const {
-        dishes,
-        handleAddToQuantity,
-        handleRemoveFromQuantity,
-        quantity,
-      } = props
+      const {dishes, handleAddToQuantity, handleRemoveFromQuantity} = props
       const {
         dishId,
         dishName,
@@ -29,7 +24,7 @@ const DishList = props => (
 
       const {addCartItem} = value
       const onClickAddToCart = () => {
-        addCartItem({...dishes, quantity})
+        addCartItem({...dishes, quantity: count || 1})
       }
 
       return (
@@ -46,7 +41,7 @@ const DishList = props => (
               <button type="button" onClick={onClickRemove}>
                 -
               </button>
-              <p>{count || 0}</p>
+              <p>{count !== undefined ? count : 1}</p>
               <button type="button" onClick={onClickAdd}>
                 +
               </button>

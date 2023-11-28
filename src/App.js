@@ -69,14 +69,17 @@ class App extends Component {
         }),
       }))
     } else {
-      const updatedCartList = [...cartList, product]
+      const updatedCartList = [
+        ...cartList,
+        {...product, id: cartList.length + 1},
+      ]
       this.setState({cartList: updatedCartList})
     }
   }
 
   render() {
     const {cartList} = this.state
-
+    console.log(cartList)
     return (
       <CartContext.Provider
         value={{

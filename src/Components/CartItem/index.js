@@ -4,7 +4,8 @@ const CartItem = props => {
   return (
     <div className="cart-item-container">
       {cartList.map(cart => (
-        <div key={cart.id} className="cart-item">
+        <div key={cart.dishId} className="cart-item">
+          <img src={cart.dishImage} alt={cart.dishName} />
           <p>{cart.dishName}</p>
           <p>Quantity: {cart.quantity}</p>
           <button type="button" onClick={() => onIncrement(cart.id)}>
